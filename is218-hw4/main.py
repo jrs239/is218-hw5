@@ -1,37 +1,59 @@
-import sys
-from calculator import Calculator
+import os
+import importlib
 from decimal import Decimal, InvalidOperation
 
-def calculate_and_print(a, b, operation_name):
-    operation_mappings = {
-        'add': Calculator.add,
-        'subtract': Calculator.subtract,
-        'multiply': Calculator.multiply,
-        'divide': Calculator.divide
-    }
+COMMANDS = {}
 
-    # Unified error handling for decimal conversion
-    try:
-        a_decimal, b_decimal = map(Decimal, [a, b])
-        result = operation_mappings.get(operation_name) # Use get to handle unknown operations
-        if result:
-            print(f"The result of {a} {operation_name} {b} is equal to {result(a_decimal, b_decimal)}")
+def load_commands():
+    command_folder = "commands"
+    for filename in os.listdir(command_folder):
+        if filename.endwith(".py") and not filename.startswith("__"):
+            module_name = f"{command_folder}.{filename[:-3]}"
+            module = importlib.import_module(module_name)
+            for attr in dir(module):
+                obj = getattr(module, attr)
+                if isinstance(obj, type) and hasattr(obj, "execute"):
+                    instance = obj()
+                    COMMANDS[instance.name] = instance
+
+def repl():
+    print("Welcome to the Calculator App!")
+    print("Type 'menu' to view commands or 'exit' to quit.\n")
+
+    while True:
+        user_input = input(">> ").strip()
+        if user_input.lower() == "exit":
+            print("Goodbye!")
+            break
+        elif user_input.lower() == "menu":
+            print("Available commands:", ", ".join(COMMANDS.keys()))
+            continue
+
+        parts = user_input.split()
+        if len(parts) != 3:
+            print("Usage: <operation> <num1> <num2>")
+            continue
+
+        operation, a_str, b_str = parts
+
+        try:
+            a = Decimal(a_str)
+            b = Decimal(b_str)
+        except InvalidOperation:
+            print(f"Invalid input: '{a_str}' or '{b_str}' is not a number.")
+            continue
+
+        if operation in COMMANDS:
+            try:
+                result = COMMANDS[operation].execute(a, b)
+                print(f"Result: {result}")
+            except ZeroDivisionError:
+                print("Error: Division by zero.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
         else:
-            print(f"Unknown operation: {operation_name}")
-    except InvalidOperation:
-        print(f"Invalid number input: {a} or {b} is not a valid number.")
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
-    except Exception as e: # Catch-all for unexpected errors
-        print(f"An error occurred: {e}")
+            print(f"Unknown command: '{operation}'. Type 'menu' to see available options.")
 
-def main():
-    if len(sys.argv) != 4:
-        print("Usage: python calculator_main.py <number1> <number2> <operation>")
-        sys.exit(1)
-    
-    _, a, b, operation = sys.argv
-    calculate_and_print(a, b, operation)
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    load_commands()
+    repl()
