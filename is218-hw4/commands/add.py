@@ -1,5 +1,5 @@
 class Add:
-	name = "add"
-	
-	def execute(self, a, b):
-		return float(a) + float(b)
+    name = "add"
+
+    def execute(self, a, b):
+        return a + b

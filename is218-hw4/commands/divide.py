@@ -1,13 +1,9 @@
 class Divide:
-	name = "divide"
+    name = "divide"
 
-	def execute(self, a, b):
-		
-		try:
-			a = float(a)
-			b = float(b)
-			if b == 0;
-				return "Error: Cannot divide by zero."
-			return a/b
-		except ValueError:
-			return "Error: Invalid input. Please enter two numbers."
+    def execute(self, a, b):
+        a = float(a)
+        b = float(b)
+        if b == 0:
+            raise ZeroDivisionError("Cannot divide by zero.")
+        return a / b

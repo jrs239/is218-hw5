@@ -1,6 +1,5 @@
 class Subtract:
+    name = "subtract"
 
-	name = "subtract"
-
-	def execute(self, a, b):
-		return float(a) - float(b)
+    def execute(self, a, b):
+        return a - b
